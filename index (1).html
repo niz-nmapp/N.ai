@@ -1,33 +1,811 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>n.ai.in - Smart Search</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n.ai.in - Search 0.2s Faster Than Google</title>
+    <style>
+        :root {
+            --primary: #6E3AFF;
+            --secondary: #00FF88;
+            --accent: #FF6B00;
+            --dark: #121212;
+            --light: #FFFFFF;
+            --gray: #F1F3F4;
+            --text: #202124;
+            --border: #DADCE0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 0 16px;
+        }
+        
+        /* Header Styles */
+        header {
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            background: var(--light);
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 80px;
+        }
+        
+        .search-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 8px 16px;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.08);
+        }
+        
+        .search-box:focus-within {
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+        }
+        
+        #search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+            padding: 8px 0;
+        }
+        
+        .search-icon {
+            color: #9AA0A6;
+            margin-right: 8px;
+        }
+        
+        /* Results Styles */
+        .results-container {
+            padding: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .result-stats {
+            color: #70757A;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .result-card {
+            margin-bottom: 24px;
+        }
+        
+        .result-url {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #202124;
+            margin-bottom: 4px;
+        }
+        
+        .result-domain {
+            color: #5F6368;
+            margin-left: 4px;
+        }
+        
+        .result-title {
+            color: #1A0DAB;
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        
+        .result-snippet {
+            color: #4D5156;
+            line-height: 1.58;
+            font-size: 14px;
+        }
+        
+        .result-image {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+        }
+        
+        .result-feature {
+            background: #F8F9FA;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .feature-title {
+            font-size: 20px;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: #1A0DAB;
+        }
+        
+        .feature-content {
+            color: #4D5156;
+            line-height: 1.58;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+        
+        .image-grid img {
+            width: 100%;
+            border-radius: 8px;
+            height: 120px;
+            object-fit: cover;
+        }
+        
+        .news-container {
+            margin: 24px 0;
+        }
+        
+        .news-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .news-card {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .news-image {
+            width: 100px;
+            height: 70px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .news-content {
+            flex: 1;
+        }
+        
+        .news-source {
+            font-size: 12px;
+            color: #5F6368;
+            margin-bottom: 4px;
+        }
+        
+        .news-headline {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .news-snippet {
+            font-size: 12px;
+            color: #5F6368;
+        }
+        
+        .latency-badge {
+            background: var(--secondary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--light);
+            border-top: 1px solid var(--border);
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #5F6368;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+        }
+        
+        /* Home Page Styles */
+        .home-container {
+            padding: 16px;
+        }
+        
+        .trending-searches {
+            margin: 24px 0;
+        }
+        
+        .trending-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        
+        .trending-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .trending-item {
+            background: #F8F9FA;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-card, .news-card {
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 0.4s infinite;
+        }
+        
+        @media (max-width: 600px) {
+            .logo {
+                display: none;
+            }
+            
+            .search-box {
+                border-radius: 8px;
+            }
+            
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .trending-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <div id="logo">🇮🇳 n.ai.in</div>
-    <div id="signin">Sign In</div>
-  </header>
-  <main>
-    <div id="search-section">
-      <input type="text" id="search-box" placeholder="Search smarter..." />
-      <button id="search-btn">🔍</button>
-      <button id="voice-btn">🎤</button>
-      <button id="camera-btn">📷</button>
-    </div>
-    <div id="results"></div>
-    <section id="news-feed">
-      <h2>Latest News</h2>
-      <ul>
-        <li>News Item 1</li>
-        <li>News Item 2</li>
-      </ul>
-    </section>
-  </main>
+    <!-- Header with Search -->
+    <header>
+        <div class="container">
+            <div class="search-container">
+                <div class="logo">n.ai.in</div>
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search n.ai.in or type a URL" autofocus>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Home Content (shown when no search) -->
+    <main class="home-container" id="home-container">
+        <div class="trending-searches">
+            <div class="trending-title">Trending Searches</div>
+            <div class="trending-list">
+                <div class="trending-item" data-query="IND vs ENG Test">IND vs ENG Test</div>
+                <div class="trending-item" data-query="AI advancements 2024">AI advancements 2024</div>
+                <div class="trending-item" data-query="Weather in Delhi">Weather in Delhi</div>
+                <div class="trending-item" data-query="How to make pizza">How to make pizza</div>
+            </div>
+        </div>
+        
+        <div class="news-container">
+            <div class="news-title">Top News</div>
+            <div id="news-feed">
+                <!-- News will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Results Section -->
+    <main class="results-container" id="results-container">
+        <!-- Results will be inserted here by JavaScript -->
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" id="nav-home">
+            <i class="fas fa-home nav-icon"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" id="nav-search">
+            <i class="fas fa-search nav-icon"></i>
+            <span>Search</span>
+        </div>
+        <div class="nav-item" id="nav-news">
+            <i class="fas fa-newspaper nav-icon"></i>
+            <span>News</span>
+        </div>
+        <div class="nav-item" id="nav-images">
+            <i class="fas fa-image nav-icon"></i>
+            <span>Images</span>
+        </div>
+        <div class="nav-item" id="nav-profile">
+            <i class="fas fa-user nav-icon"></i>
+            <span>Profile</span>
+        </div>
+    </nav>
+
+    <script>
+        // Knowledge base for n.ai.in (simulates a search index)
+        const knowledgeBase = {
+            "ind vs eng test": {
+                query: "IND vs ENG Test",
+                latency: 0.18,
+                stats: "About 125,000,000 results (0.18 seconds)",
+                results: [
+                    {
+                        url: "https://n.ai.in/cricket",
+                        title: "IND vs ENG Test Series 2024 - Live Scores & Commentary",
+                        snippet: "Follow live coverage of the India vs England Test series. Current match: India lead by 127 runs at stumps on Day 1. Kohli 89*, Jadeja 42*. England bowled out for 215 earlier.",
+                        images: [
+                            "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=300&h=200&fit=crop",
+                            "https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=300&h=200&fit=crop"
+                        ]
+                    },
+                    {
+                        url: "https://n.ai.in/cricket/stats",
+                        title: "IND vs ENG Head to Head Test Records - n.ai.in Cricket",
+                        snippet: "India and England have played 131 Test matches since 1932. India has won 31, England has won 50, and 50 matches were drawn. See full statistics and records.",
+                        images: []
+                    },
+                    {
+                        url: "https://n.ai.in/cricket/news",
+                        title: "IND vs ENG Test Series Updates - Latest News",
+                        snippet: "Get the latest news about the India vs England Test series. Team updates, injury reports, and expert analysis from our cricket specialists.",
+                        images: [
+                            "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=300&h=200&fit=crop"
+                        ]
+                    }
+                ],
+                feature: {
+                    title: "India vs England Test Series Summary",
+                    content: "The 2024 India vs England Test series is currently being played across 5 venues in India. After Day 1 of the 2nd Test, India leads by 127 runs with Kohli (89*) and Jadeja (42*) at the crease. England was bowled out for 215 in their first innings. The series is tied 1-1 after England won the first Test by 28 runs.",
+                    image: "https://images.unsplash.com/photo-1543351611-58f69d7c1781?w=600&h=400&fit=crop"
+                },
+                news: [
+                    {
+                        title: "Kohli's 89* puts India in commanding position",
+                        source: "Cricket Today",
+                        time: "2 hours ago",
+                        image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=100&h=70&fit=crop",
+                        snippet: "Virat Kohli's unbeaten 89 helped India take control of the second Test against England on Day 1."
+                    },
+                    {
+                        title: "Anderson takes 4 wickets but England struggle",
+                        source: "Sports Daily",
+                        time: "5 hours ago",
+                        image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=100&h=70&fit=crop",
+                        snippet: "James Anderson's 4-wicket haul wasn't enough as England were bowled out for 215."
+                    }
+                ]
+            },
+            "latest ai advancements": {
+                query: "latest AI advancements",
+                latency: 0.19,
+                stats: "About 92,000,000 results (0.19 seconds)",
+                results: [
+                    {
+                        url: "https://n.ai.in/ai/advancements",
+                        title: "Top AI Advancements in 2024 - n.ai.in Research",
+                        snippet: "2024 has seen breakthroughs in agentic AI systems, multimodal models, and energy-efficient architectures. The biggest developments include Google's Project Astra and OpenAI's GPT-5.",
+                        images: [
+                            "https://images.unsplash.com/photo-1677442135136-760c813a743e?w=300&h=200&fit=crop",
+                            "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=300&h=200&fit=crop"
+                        ]
+                    },
+                    {
+                        url: "https://n.ai.in/ai/multimodal",
+                        title: "Multimodal AI Systems - The Next Frontier",
+                        snippet: "New AI models in 2024 can simultaneously process text, images, audio, and video with human-like understanding. These systems show emergent capabilities not explicitly programmed.",
+                        images: []
+                    },
+                    {
+                        url: "https://n.ai.in/ai/efficiency",
+                        title: "Energy Efficient AI Models - 2024 Breakthroughs",
+                        snippet: "Researchers have developed new techniques that reduce AI energy consumption by 70% while maintaining performance. These advancements make AI more sustainable and accessible.",
+                        images: [
+                            "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=200&fit=crop"
+                        ]
+                    }
+                ],
+                feature: {
+                    title: "AI Advancements 2024 Summary",
+                    content: "The most significant AI advancements in 2024 include: 1) Agentic systems that can autonomously complete complex, multi-step tasks; 2) Multimodal models that process text, images, and audio simultaneously with deep understanding; 3) Dramatic improvements in energy efficiency, with some models using 70% less power; 4) Breakthroughs in real-time learning and adaptation.",
+                    image: "https://images.unsplash.com/photo-1677442135136-760c813a743e?w=600&h=400&fit=crop"
+                },
+                news: [
+                    {
+                        title: "OpenAI announces GPT-5 with revolutionary capabilities",
+                        source: "Tech News",
+                        time: "1 day ago",
+                        image: "https://images.unsplash.com/photo-1677442135136-760c813a743e?w=100&h=70&fit=crop",
+                        snippet: "OpenAI's new model demonstrates unprecedented reasoning and problem-solving skills."
+                    },
+                    {
+                        title: "Google's Project Astra shows real-time AI assistance",
+                        source: "Digital Trends",
+                        time: "2 days ago",
+                        image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=100&h=70&fit=crop",
+                        snippet: "Google's latest AI project can see, hear, and understand the world in real-time."
+                    }
+                ]
+            },
+            "how to make pizza": {
+                query: "how to make pizza",
+                latency: 0.17,
+                stats: "About 68,000,000 results (0.17 seconds)",
+                results: [
+                    {
+                        url: "https://n.ai.in/recipes/pizza",
+                        title: "Easy Homemade Pizza Recipe - n.ai.in Cooking",
+                        snippet: "Learn how to make delicious pizza at home with this simple recipe. You'll need: 2 1/2 cups flour, 1 tsp sugar, 3/4 tsp salt, 1 tbsp yeast, 1 cup warm water, 2 tbsp olive oil.",
+                        images: [
+                            "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=300&h=200&fit=crop",
+                            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=200&fit=crop"
+                        ]
+                    },
+                    {
+                        url: "https://n.ai.in/cooking-tips/pizza",
+                        title: "10 Tips for Perfect Homemade Pizza - n.ai.in",
+                        snippet: "Discover professional tips for making restaurant-quality pizza at home. Key techniques include kneading the dough properly, using the right oven temperature, and fresh ingredients.",
+                        images: []
+                    },
+                    {
+                        url: "https://n.ai.in/recipes/vegetarian-pizza",
+                        title: "Vegetarian Pizza Recipes - n.ai.in Cooking",
+                        snippet: "Try these delicious vegetarian pizza variations. From classic Margherita to creative veggie-loaded options, find the perfect meat-free pizza recipe for your taste.",
+                        images: [
+                            "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&h=200&fit=crop"
+                        ]
+                    }
+                ],
+                feature: {
+                    title: "Quick Pizza Making Guide",
+                    content: "Basic Pizza Recipe: 1) Mix 2 1/2 cups flour, 1 tsp sugar, 3/4 tsp salt, 1 tbsp yeast. 2) Add 1 cup warm water and 2 tbsp olive oil. 3) Knead for 5-7 minutes. 4) Let rise for 1 hour. 5) Roll out dough, add toppings. 6) Bake at 475°F (245°C) for 12-15 minutes. For best results, use a pizza stone and fresh mozzarella.",
+                    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=400&fit=crop"
+                },
+                news: [
+                    {
+                        title: "New study reveals health benefits of homemade pizza",
+                        source: "Food Network",
+                        time: "3 days ago",
+                        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=70&fit=crop",
+                        snippet: "Research shows homemade pizza can be part of a balanced diet when made with fresh ingredients."
+                    },
+                    {
+                        title: "World Pizza Championship winner shares secrets",
+                        source: "Culinary Arts",
+                        time: "1 week ago",
+                        image: "https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?w=100&h=70&fit=crop",
+                        snippet: "This year's champion reveals the techniques behind the perfect pizza crust."
+                    }
+                ]
+            }
+        };
+
+        // Sample news data for home page
+        const homeNews = [
+            {
+                title: "Global tech summit announces AI regulations",
+                source: "World News",
+                time: "1 hour ago",
+                image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&h=70&fit=crop",
+                snippet: "World leaders agree on new framework for responsible AI development."
+            },
+            {
+                title: "Stock markets reach all-time high",
+                source: "Financial Times",
+                time: "3 hours ago",
+                image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=100&h=70&fit=crop",
+                snippet: "Major indices surge as economic recovery exceeds expectations."
+            },
+            {
+                title: "New climate change report warns of extreme weather",
+                source: "Environmental News",
+                time: "5 hours ago",
+                image: "https://images.unsplash.com/photo-1618557702945-87860a0d1d04?w=100&h=70&fit=crop",
+                snippet: "Scientists predict more frequent heatwaves and storms in coming years."
+            },
+            {
+                title: "Breakthrough in renewable energy storage",
+                source: "Science Daily",
+                time: "7 hours ago",
+                image: "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=100&h=70&fit=crop",
+                snippet: "New battery technology could solve renewable energy's biggest challenge."
+            }
+        ];
+
+        // DOM Elements
+        const searchInput = document.getElementById('search-input');
+        const resultsContainer = document.getElementById('results-container');
+        const homeContainer = document.getElementById('home-container');
+        const newsFeed = document.getElementById('news-feed');
+        const navItems = document.querySelectorAll('.nav-item');
+        const trendingItems = document.querySelectorAll('.trending-item');
+
+        // Initialize home page
+        function initHomePage() {
+            // Load news
+            let newsHtml = '';
+            homeNews.forEach(item => {
+                newsHtml += `
+                    <div class="news-card">
+                        <img src="${item.image}" alt="${item.title}" class="news-image">
+                        <div class="news-content">
+                            <div class="news-source">${item.source} • ${item.time}</div>
+                            <div class="news-headline">${item.title}</div>
+                            <div class="news-snippet">${item.snippet}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            newsFeed.innerHTML = newsHtml;
+        }
+
+        // Perform search
+        function performSearch(query) {
+            if (!query.trim()) {
+                resultsContainer.style.display = 'none';
+                homeContainer.style.display = 'block';
+                return;
+            }
+
+            // Show results and hide home
+            resultsContainer.style.display = 'block';
+            homeContainer.style.display = 'none';
+            
+            // Find the best matching knowledge base entry
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            Object.keys(knowledgeBase).forEach(key => {
+                const score = calculateMatchScore(query.toLowerCase(), key);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = knowledgeBase[key];
+                }
+            });
+
+            // If no good match, use a default
+            if (!bestMatch || bestScore < 0.3) {
+                bestMatch = {
+                    query: query,
+                    latency: 0.16,
+                    stats: `About ${Math.floor(Math.random() * 50) + 10},000,000 results (0.16 seconds)`,
+                    results: [
+                        {
+                            url: `https://n.ai.in/search?q=${encodeURIComponent(query)}`,
+                            title: `Search Results for "${query}" - n.ai.in`,
+                            snippet: `Explore comprehensive results for "${query}" across the n.ai.in network. Our AI has analyzed thousands of sources to bring you the most relevant information.`,
+                            images: [
+                                "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=300&h=200&fit=crop",
+                                "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=300&h=200&fit=crop"
+                            ]
+                        },
+                        {
+                            url: `https://n.ai.in/wiki/${encodeURIComponent(query)}`,
+                            title: `${query} - n.ai.in Encyclopedia`,
+                            snippet: `Detailed information about ${query} from our verified knowledge base. Includes definitions, history, and related concepts.`,
+                            images: []
+                        }
+                    ],
+                    feature: {
+                        title: `About ${query}`,
+                        content: `Our AI is analyzing thousands of sources to provide you with the most comprehensive information about ${query}. Please check back in a few moments for a detailed summary, or try refining your search terms.`,
+                        image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop"
+                    },
+                    news: []
+                };
+            }
+
+            // Display results
+            displayResults(bestMatch);
+        }
+
+        // Calculate match score between query and knowledge base key
+        function calculateMatchScore(query, key) {
+            const queryWords = query.split(' ');
+            const keyWords = key.split(' ');
+            
+            let score = 0;
+            queryWords.forEach(qWord => {
+                keyWords.forEach(kWord => {
+                    if (kWord.includes(qWord) || qWord.includes(kWord)) {
+                        score += 1;
+                    }
+                });
+            });
+            
+            return score / Math.max(queryWords.length, keyWords.length);
+        }
+
+        // Display search results
+        function displayResults(data) {
+            let html = `
+                <div class="result-stats">
+                    ${data.stats} <span class="latency-badge">0.2s faster than Google</span>
+                </div>
+            `;
+            
+            // Add featured snippet if available
+            if (data.feature) {
+                html += `
+                    <div class="result-feature">
+                        <div class="feature-title">${data.feature.title}</div>
+                        ${data.feature.image ? `<img src="${data.feature.image}" alt="${data.feature.title}" class="result-image">` : ''}
+                        <div class="feature-content">${data.feature.content}</div>
+                    </div>
+                `;
+            }
+            
+            // Add regular results
+            data.results.forEach(result => {
+                const domain = new URL(result.url).hostname.replace('www.', '');
+                
+                html += `
+                    <div class="result-card">
+                        <div class="result-url">
+                            <span>${domain}</span>
+                            <span class="result-domain">▼</span>
+                        </div>
+                        <a href="${result.url}" class="result-title">${result.title}</a>
+                        <div class="result-snippet">${result.snippet}</div>
+                        ${result.images && result.images.length > 0 ? `
+                            <div class="image-grid">
+                                ${result.images.map(img => `<img src="${img}" alt="Result image">`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            // Add news if available
+            if (data.news && data.news.length > 0) {
+                html += `
+                    <div class="news-container">
+                        <div class="news-title">News about ${data.query}</div>
+                `;
+                
+                data.news.forEach(item => {
+                    html += `
+                        <div class="news-card">
+                            <img src="${item.image}" alt="${item.title}" class="news-image">
+                            <div class="news-content">
+                                <div class="news-source">${item.source} • ${item.time}</div>
+                                <div class="news-headline">${item.title}</div>
+                                <div class="news-snippet">${item.snippet}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            }
+            
+            resultsContainer.innerHTML = html;
+            
+            // Scroll to results
+            setTimeout(() => {
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', (e) => {
+            performSearch(e.target.value);
+        });
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(e.target.value);
+            }
+        });
+
+        // Bottom navigation functionality
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                navItems.forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                
+                const id = this.id;
+                
+                if (id === 'nav-home') {
+                    resultsContainer.style.display = 'none';
+                    homeContainer.style.display = 'block';
+                    searchInput.value = '';
+                } else if (id === 'nav-search') {
+                    resultsContainer.style.display = 'none';
+                    homeContainer.style.display = 'block';
+                    searchInput.focus();
+                } else {
+                    // In a real app, these would load different sections
+                    alert(`${id.replace('nav-', '')} section would load here`);
+                }
+            });
+        });
+
+        // Trending items click
+        trendingItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const query = this.getAttribute('data-query');
+                searchInput.value = query;
+                performSearch(query);
+            });
+        });
+
+        // Initialize
+        initHomePage();
+        performSearch('');
+    </script>
 </body>
 </html>
